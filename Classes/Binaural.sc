@@ -142,20 +142,24 @@ Kemar : Binaural {
 		
 		var fileL, fileR, cL, cR, stringAzi;
 
-		// reformatting the azi value
-		if (azi < 100, { stringAzi = "0" ++ azi.asString; }, { stringAzi = azi.asString; });
-		if (azi < 10, { stringAzi = "00" ++ azi.asString; });
+		// reformatting the azi values
+		stringAzi = [azi, (360 - azi) % 360].collect({ arg a;
+		if (a < 100,
+			{ if (a < 10,
+				{ "00" ++ a.asString; },
+				{ "0" ++ a.asString; }) },
+			{ a.asString; }) });
 
 		// read the files, normalise, cut them and multiply with window
 		fileL = File(path ++ "/elev" ++ elev ++ "/L"  ++ elev
-			++ "e" ++ stringAzi ++"a.dat","r");
+			++ "e" ++ stringAzi[0] ++"a.dat","r");
 		cL = fileL.read(Int16Array.newClear(fileL.length))  / 2.pow(15);
 		cL = cL.copySeries(0, 1, 127) * window;	
 		fileL.close; 
 		
-		fileR = File(path ++ "/elev" ++ elev ++ "/R"  ++ elev
-			++ "e" ++ stringAzi ++"a.dat","r");
-		cR = fileR.read(Int16Array.newClear(fileR.length)) / 2.pow(16);
+		fileR = File(path ++ "/elev" ++ elev ++ "/L"  ++ elev
+			++ "e" ++ stringAzi[1] ++"a.dat","r");
+		cR = fileR.read(Int16Array.newClear(fileR.length)) / 2.pow(15);
 		cR = cR.copySeries(0, 1, 127) * window;
 		fileR.close; 
 		
