@@ -1,27 +1,26 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="824.44">
-  <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 20.0px Helvetica}
-    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px Helvetica; min-height: 16.0px}
-    p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px Helvetica}
-    p.p4 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; min-height: 12.0px}
-    p.p5 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #bf0000}
-    p.p6 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco}
-    p.p7 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #0000bf}
-    p.p8 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #bf0000; min-height: 12.0px}
-    span.s1 {color: #000000}
-    span.s2 {color: #bf0000}
-    span.s3 {color: #0000bf}
-    span.s4 {color: #606060}
-    span.s5 {color: #007300}
-    span.Apple-tab-span {white-space:pre}
-  </style>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<title></title>
+<meta name="Generator" content="Cocoa HTML Writer">
+<meta name="CocoaVersion" content="824.48">
+<style type="text/css">
+p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 20.0px Helvetica; color: #000000}
+p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px Helvetica; color: #000000; min-height: 16.0px}
+p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px Helvetica; color: #000000}
+p.p4 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #000000; min-height: 12.0px}
+p.p5 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #bf0000}
+p.p6 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #000000}
+p.p7 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #0000bf}
+span.s1 {color: #000000}
+span.s2 {color: #bf0000}
+span.s3 {color: #0000bf}
+span.s4 {color: #606060}
+span.s5 {color: #007300}
+span.Apple-tab-span {white-space:pre}
+</style>
 </head>
 <body>
 <p class="p1"><b>VirtualRoom</b></p>
@@ -35,6 +34,7 @@
 <p class="p4"><br></p>
 <p class="p5"><span class="s1">s.options.blockSize_(128)<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// sets kr blocksize; default = 64</p>
 <p class="p6">s.options.memSize_(8192 * 16);<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s2">// more memory for delay lines</span></p>
+<p class="p5"><span class="s1">s.reboot;<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span></span>// dont forget to reboot the server after this</p>
 <p class="p4"><br></p>
 <p class="p6">p = <span class="s3">ProxySpace</span>.push;</p>
 <p class="p2"><br></p>
@@ -51,18 +51,23 @@
 <p class="p5">// initialise rendering</p>
 <p class="p6">v.init;</p>
 <p class="p4"><br></p>
-<p class="p5">// set the room properties (reverberation time and gain,</p>
-<p class="p5">// hf damping on reverb and early reflections gain</p>
+<p class="p5">// set the room properties<span class="Apple-converted-space"> </span></p>
+<p class="p5">// room mix, reverbration gain, hf damping, early reflections gain</p>
+<p class="p5">// also see FreeVerb</p>
+<p class="p5">// Note: for compatibility, revTime is still available, but maps to mix (5sec = 1)</p>
 <p class="p6">(</p>
-<p class="p6">v.revTime = 0.1;</p>
+<p class="p6">v.roomMix = 0.25;</p>
 <p class="p6">v.revGain = 0.1;</p>
 <p class="p6">v.hfDamping = 0.5;</p>
 <p class="p6">v.refGain = 0.8;</p>
 <p class="p6">)</p>
+<p class="p4"><br></p>
+<p class="p5">// A gui is also available<span class="Apple-converted-space"> </span></p>
+<p class="p6">v.gui;</p>
 <p class="p2"><br></p>
 <p class="p3">Note:</p>
 <p class="p3">the coordinate system is given according to the listener's head:<span class="Apple-converted-space">  </span>x-axis (nose), y-axis (left-ear) and z-axis (vertex) and Rooms are defined by the origin and width/depth/height</p>
-<p class="p8"><br></p>
+<p class="p4"><br></p>
 <p class="p5">// a room 8m wide (y), 5m deep(x) and 5m high(z) - nose is always along x</p>
 <p class="p6">v.room = [0, 0, 0, 5, 8, 5];</p>
 <p class="p4"><br></p>
@@ -103,7 +108,7 @@
 <p class="p6">v.removeSource(<span class="s4">"test1"</span>);</p>
 <p class="p6">v.removeSource(<span class="s4">"test2"</span>);</p>
 <p class="p6">v.removeSource(<span class="s4">"test3"</span>);</p>
-<p class="p8"><br></p>
+<p class="p4"><br></p>
 <p class="p4"><br></p>
 <p class="p5">// the light version of addSource is used if a lot of sources are needed</p>
 <p class="p5">// consumes 63% CPU on iBook G4 1Ghz</p>
@@ -119,7 +124,7 @@
 <p class="p4"><br></p>
 <p class="p5">// remove the sources and free the node proxies</p>
 <p class="p6">6.do ({ <span class="s3">|i|</span><span class="Apple-converted-space">  </span>v.removeSource(i.asString); x[i].free; });</p>
-<p class="p8"><br></p>
+<p class="p4"><br></p>
 <p class="p5">// adjust the room properties as you like</p>
 <p class="p6">v.gui;</p>
 <p class="p4"><br></p>

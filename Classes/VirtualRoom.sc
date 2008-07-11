@@ -59,7 +59,7 @@ VirtualRoom {
 	var <>roomProperties;
 		
 	// the room as [x, y, z, depth, width, height] where xyz is the origin
-	var <>room;
+	var <>roomSize;
 	
 	// the listener as NodeProxy.kr [ x, y, z, orientation] 
 	var <>listener;
@@ -92,8 +92,8 @@ VirtualRoom {
 			bin.source = { BinAmbi3O.ar( encoded.ar ) };
 			revIn.source = { bin.ar }; 	// not ideal...
 			out = NodeProxy.audio(numChannels: 2);
-			out.source = { arg rT = 1, rG = 0.1, hD = 0.6;
-					bin.ar + (AdCVerb.ar( revIn.ar, revTime: rT, hfDamping: hD) * rG)}; 
+			out.source = { arg m = 0.5, ro = 0.25, rG = 0.1, hD = 0.6;
+					bin.ar + (FreeVerb2.ar( revIn.ar[0], revIn.ar[1], mix: m, room: ro, damp: hD) * rG)}; 
 			listener = NodeProxy.control(numChannels: 4);
 			listener.source = { |x=0, y=0, z=0, o=0| [ x, y, z, o] };
 			"Virtual Room initialised".postln;
@@ -112,16 +112,33 @@ VirtualRoom {
 		out.set(\rG, value);
 	}
 	revGain { ^roomProperties.at(\revGain).value ?? 0.1 }
+	// for compatibility - effects mix of FreeVerb (10sec revTime is the wettest it gets...)
 	revTime_ { arg value;
 		if(value.isNil) { roomProperties.removeAt(\revTime) } { roomProperties.put(\revTime, value) };
-		out.set(\rT, value);
+		out.set(\m, value/5);
 	}
 	revTime { ^roomProperties.at(\revTime).value ?? 1 }
+	roomMix_ { arg value;
+		if(value.isNil) { roomProperties.removeAt(\roomMix) } { roomProperties.put(\roomMix, value) };
+		out.set(\m, value);
+	}
+	roomMix { ^roomProperties.at(\roomMix).value ?? 1 }
 	hfDamping_ { arg value;
 		if(value.isNil) { roomProperties.removeAt(\hfDamping) } { roomProperties.put(\hfDamping, value) };
 		out.set(\hD, value);
 	}
 	hfDamping { ^roomProperties.at(\hfDamping).value ?? 0.6 }
+	room_ { arg value;
+		var diag;
+		if(value.isNil || (value.size!=6)) { 
+			"WARNING AmbIEM: using default room (0,0,0,5,8,5)".postln; 
+			roomSize=[0, 0, 0, 5, 8, 5] } 
+		{ roomSize = value };
+		diag = hypot(roomSize[2]-roomSize[5], hypot(roomSize[0]-roomSize[3], roomSize[1]-roomSize[4]));
+		out.set(\room, diag.linlin(0, 50, 0, 1)); // set the room size for FreeVerb
+	}
+	room { ^roomSize }
+	
 
 	/* 	Method: gui
 		provide a GUI for the room properties
@@ -131,7 +148,8 @@ VirtualRoom {
 		var height = 15;
 		s = Array.newClear(4);
 		v = Array.newClear(4);
-		roomProperties.put(\rTSpec, [0, 3].asSpec);			w = SCWindow("Virtual Room Properties", Rect(128, 64, 340, 150));
+		roomProperties.put(\rTSpec, [0, 3].asSpec);
+		roomProperties.put(\rMSpec, [0, 1].asSpec);			w = SCWindow("Virtual Room Properties", Rect(128, 64, 340, 150));
 		w.view.decorator = f = FlowLayout(w.view.bounds,Point(4,4),Point(4,2));
 
 		t = SCStaticText(w, Rect(0, 0, 75, height+2));
@@ -157,14 +175,14 @@ VirtualRoom {
 		f.nextLine;
 		
 		t = SCStaticText(w, Rect(0, 0, 75, height+2));
-		t.string = "RevTime: ";
+		t.string = "RoomMix: ";
 		v[2] = SCStaticText(w, Rect(0, 0, 30, height+2));
 		s[2] = SCSlider(w, Rect(0, 0, 182, height));
-		s[2].value = roomProperties.at(\rTSpec).unmap(this.revTime);
+		s[2].value = this.roomMix;
 		s[2].action = { 
-			var val = roomProperties.at(\rTSpec).map(s[2].value);
-			this.revTime = val;
-			v[2].string = val.round(0.1).asString;
+			var val = s[2].value;
+			this.roomMix = val;
+			v[2].string = val.round(0.01).asString;
 		};
 		f.nextLine;
 		
