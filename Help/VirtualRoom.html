@@ -7,18 +7,22 @@
 <meta name="Generator" content="Cocoa HTML Writer">
 <meta name="CocoaVersion" content="824.48">
 <style type="text/css">
-p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 20.0px Helvetica; color: #000000}
-p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px Helvetica; color: #000000; min-height: 16.0px}
-p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px Helvetica; color: #000000}
-p.p4 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #000000; min-height: 12.0px}
-p.p5 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #bf0000}
-p.p6 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #000000}
-p.p7 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #0000bf}
+p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 20.0px Helvetica}
+p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px Helvetica; min-height: 16.0px}
+p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px Helvetica}
+p.p4 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; min-height: 12.0px}
+p.p5 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #ad140d}
+p.p6 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco}
+p.p7 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #001bb9}
+p.p8 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #000000}
+p.p9 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #000000; min-height: 12.0px}
+p.p10 {margin: 0.0px 0.0px 0.0px 0.0px; font: 9.0px Monaco; color: #bf0000}
 span.s1 {color: #000000}
-span.s2 {color: #bf0000}
-span.s3 {color: #0000bf}
+span.s2 {color: #ad140d}
+span.s3 {color: #001bb9}
 span.s4 {color: #606060}
 span.s5 {color: #007300}
+span.s6 {color: #bf0000}
 span.Apple-tab-span {white-space:pre}
 </style>
 </head>
@@ -52,11 +56,8 @@ span.Apple-tab-span {white-space:pre}
 <p class="p6">v.init;</p>
 <p class="p4"><br></p>
 <p class="p5">// set the room properties<span class="Apple-converted-space"> </span></p>
-<p class="p5">// room mix, reverbration gain, hf damping, early reflections gain</p>
-<p class="p5">// also see FreeVerb</p>
-<p class="p5">// Note: for compatibility, revTime is still available, but maps to mix (5sec = 1)</p>
+<p class="p5">// reverbration gain, hf damping, early reflections gain</p>
 <p class="p6">(</p>
-<p class="p6">v.roomMix = 0.25;</p>
 <p class="p6">v.revGain = 0.1;</p>
 <p class="p6">v.hfDamping = 0.5;</p>
 <p class="p6">v.refGain = 0.8;</p>
@@ -72,7 +73,7 @@ span.Apple-tab-span {white-space:pre}
 <p class="p6">v.room = [0, 0, 0, 5, 8, 5];</p>
 <p class="p4"><br></p>
 <p class="p5">// make it<span class="Apple-converted-space">  </span>play to standard out</p>
-<p class="p6">v.out.play;</p>
+<p class="p6">v.play;</p>
 <p class="p4"><br></p>
 <p class="p5">// listener is a NodeProxy.kr, set the source</p>
 <p class="p6">v.listener.source = { [ <span class="s3">MouseY</span>.kr(5,0), <span class="s3">MouseX</span>.kr(8,0), 2.5, 0] };</p>
@@ -89,25 +90,25 @@ span.Apple-tab-span {white-space:pre}
 <p class="p6">)</p>
 <p class="p4"><br></p>
 <p class="p4"><br></p>
-<p class="p6">v.addSource( ~noisy, <span class="s4">"test1"</span>, [1, 2, 2.5]);</p>
-<p class="p6">v.addSource( ~sinus, <span class="s4">"test2"</span>, [4, 7, 2.5]);</p>
-<p class="p6">v.addSource( ~dust, <span class="s4">"test3"</span>, [2, 5, 2.5]);</p>
+<p class="p8">v.addSource( ~noisy, <span class="s5">\test1</span>, [1, 2, 2.5]);</p>
+<p class="p8">v.addSource( ~sinus, <span class="s5">\test2</span>, [4, 7, 2.5]);</p>
+<p class="p8">v.addSource( ~dust, <span class="s5">\test3</span>, [2, 5, 2.5]);</p>
 <p class="p4"><br></p>
 <p class="p5">// change the source position</p>
-<p class="p6">v.sources[<span class="s4">"test1"</span>].setn(<span class="s5">\xpos</span>, [2.5, 3, 2.5]);<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s2">// right</span></p>
-<p class="p6">v.sources[<span class="s4">"test1"</span>].setn(<span class="s5">\xpos</span>, [2.5, 5, 2.5]);<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s2">// left</span></p>
-<p class="p6">v.sources[<span class="s4">"test1"</span>].setn(<span class="s5">\xpos</span>, [2, 4, 2.5]);<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s2">// back</span></p>
-<p class="p6">v.sources[<span class="s4">"test1"</span>].setn(<span class="s5">\xpos</span>, [3, 4, 2.5]);<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s2">// front</span></p>
-<p class="p4"><br></p>
-<p class="p5">// change the listener position</p>
-<p class="p6">v.listener.setn(<span class="s5">\x</span>, [3, 5, 2.5, 0])<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s2">// source to the right</span></p>
-<p class="p6">v.listener.setn(<span class="s5">\x</span>, [3, 5, 2.5, pi/2])<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s2">// turn, source to the front</span></p>
-<p class="p4"><br></p>
-<p class="p4"><br></p>
-<p class="p5">// remove the sources</p>
-<p class="p6">v.removeSource(<span class="s4">"test1"</span>);</p>
-<p class="p6">v.removeSource(<span class="s4">"test2"</span>);</p>
-<p class="p6">v.removeSource(<span class="s4">"test3"</span>);</p>
+<p class="p8">v.sources[<span class="s5">\test1</span>].setn(<span class="s5">\xpos</span>, [2.5, 3, 2.5]);<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s6">// right</span></p>
+<p class="p8">v.sources[<span class="s5">\test1</span>].setn(<span class="s5">\xpos</span>, [2.5, 5, 2.5]);<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s6">// left</span></p>
+<p class="p8">v.sources[<span class="s5">\test1</span>].setn(<span class="s5">\xpos</span>, [2, 4, 2.5]);<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s6">// back</span></p>
+<p class="p8">v.sources[<span class="s5">\test1</span>].setn(<span class="s5">\xpos</span>, [3, 4, 2.5]);<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s6">// front</span></p>
+<p class="p9"><br></p>
+<p class="p10">// change the listener position</p>
+<p class="p8">v.listener.setn(<span class="s5">\x</span>, [3, 5, 2.5, 0])<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s6">// source to the right</span></p>
+<p class="p8">v.listener.setn(<span class="s5">\x</span>, [3, 5, 2.5, pi/2])<span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="Apple-tab-span">	</span><span class="s6">// turn, source to the front</span></p>
+<p class="p9"><br></p>
+<p class="p9"><br></p>
+<p class="p10">// remove the sources</p>
+<p class="p8">v.removeSource(<span class="s5">\test1</span>);</p>
+<p class="p8">v.removeSource(<span class="s5">\test2</span>);</p>
+<p class="p8">v.removeSource(<span class="s5">\test3</span>);</p>
 <p class="p4"><br></p>
 <p class="p4"><br></p>
 <p class="p5">// the light version of addSource is used if a lot of sources are needed</p>
@@ -140,7 +141,6 @@ span.Apple-tab-span {white-space:pre}
 <p class="p6">w.revTime = 0;</p>
 <p class="p6">w.revGain = 0;</p>
 <p class="p6">w.hfDamping = 1;</p>
-<p class="p6">w.refGain = 0.9;</p>
 <p class="p6">)</p>
 <p class="p4"><br></p>
 <p class="p5">// same listener, same room dimensions</p>
@@ -150,8 +150,8 @@ span.Apple-tab-span {white-space:pre}
 <p class="p5">// play it on channels 2, 3</p>
 <p class="p6">w.out.playN([2,3]);</p>
 <p class="p6">~dust = { <span class="s3">Dust</span>.ar(400) };</p>
-<p class="p6">w.addSource( ~dust, <span class="s4">"test3"</span>, [3, 3, 2.5]);</p>
-<p class="p6">w.removeSource(<span class="s4">"test3"</span>);</p>
+<p class="p6">w.addSource( ~dust, <span class="s4">\test3</span>, [3, 3, 2.5]);</p>
+<p class="p6">w.removeSource(<span class="s4">\test3</span>);</p>
 <p class="p4"><br></p>
 <p class="p5">// free the virtual room</p>
 <p class="p6">v.free;</p>

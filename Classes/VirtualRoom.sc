@@ -71,9 +71,8 @@ VirtualRoom {
 		create an instance and initialise the instance's list of sources
 	*/
 	*new {
-		^super.new.sources_(Dictionary.new)
-			.roomProperties_(Dictionary.new);
-
+		^super.new.sources_(IdentityDictionary.new)
+			.roomProperties_(IdentityDictionary.new);
 	}
 
 	/*	Method: init
@@ -83,51 +82,48 @@ VirtualRoom {
 
 		// initialise the rendering
 		BinAmbi3O.kemarPath = kemarPath;
+		
 		// Note: different schemes may be passed to the bin NodeProxy, see source / help
 		BinAmbi3O.init('1_4_7_4', doneAction: {
 		 	// initialise the rendering chain when buffers are ready
 		 	revIn = NodeProxy.audio(numChannels: 2);
 			encoded = NodeProxy.audio(numChannels: 16);
 			bin = NodeProxy.audio(numChannels: 2);
-			bin.source = { BinAmbi3O.ar( encoded.ar ) };
-			revIn.source = { bin.ar }; 	// not ideal...
+			bin.prime({ BinAmbi3O.ar( encoded.ar ) }); // only prime them, dont start them yet.
+			revIn.prime({ bin.ar }); 	// not ideal... 
+									// - should be diffuse-field EQed, 
+									// and decorrelated sum of 'encoded'. 
+									// hmm. or maybe better: as is, but softened down (OnePole)
+									
 			out = NodeProxy.audio(numChannels: 2);
-			out.source = { arg m = 0.5, ro = 0.25, rG = 0.1, hD = 0.6;
-					bin.ar + (FreeVerb2.ar( revIn.ar[0], revIn.ar[1], mix: m, room: ro, damp: hD) * rG)}; 
+			out.prime({ arg room = 0.25, revGain = 0.1, hfDamping = 0.6;
+					bin.ar + (FreeVerb2.ar( revIn.ar[0], revIn.ar[1], 
+						mix: 1, room: room, damp: hfDamping) * revGain) 
+			}); 
 			listener = NodeProxy.control(numChannels: 4);
-			listener.source = { |x=0, y=0, z=0, o=0| [ x, y, z, o] };
-			"Virtual Room initialised".postln;
+			listener.prime({ |x=0, y=0, z=0, o=0| [ x, y, z, o] });
+			"Virtual Room initialised.".postln;
 		});
 	}
 
 	// access methods	
-	
 	refGain_ { arg value;
 		if(value.isNil) { roomProperties.removeAt(\refGain) } { roomProperties.put(\refGain, value) };
 		sources.do({ |source| source.set(\refGain, value) });
 	}
 	refGain { ^roomProperties.at(\refGain).value ?? 0.6 }
+	
 	revGain_ { arg value;
 		if(value.isNil) { roomProperties.removeAt(\revGain) } { roomProperties.put(\revGain, value) };
-		out.set(\rG, value);
+		out.set(\revGain, value);
 	}
 	revGain { ^roomProperties.at(\revGain).value ?? 0.1 }
-	// for compatibility - effects mix of FreeVerb (10sec revTime is the wettest it gets...)
-	revTime_ { arg value;
-		if(value.isNil) { roomProperties.removeAt(\revTime) } { roomProperties.put(\revTime, value) };
-		out.set(\m, value/5);
-	}
-	revTime { ^roomProperties.at(\revTime).value ?? 1 }
-	roomMix_ { arg value;
-		if(value.isNil) { roomProperties.removeAt(\roomMix) } { roomProperties.put(\roomMix, value) };
-		out.set(\m, value);
-	}
-	roomMix { ^roomProperties.at(\roomMix).value ?? 1 }
 	hfDamping_ { arg value;
 		if(value.isNil) { roomProperties.removeAt(\hfDamping) } { roomProperties.put(\hfDamping, value) };
-		out.set(\hD, value);
+		out.set(\hfDamping, value);
 	}
 	hfDamping { ^roomProperties.at(\hfDamping).value ?? 0.6 }
+	
 	room_ { arg value;
 		var diag;
 		if(value.isNil || (value.size!=6)) { 
@@ -146,16 +142,16 @@ VirtualRoom {
 	gui {
 		var w, f, s, v, t;
 		var height = 15;
-		s = Array.newClear(4);
-		v = Array.newClear(4);
+		s = Array.newClear(3);
+		v = Array.newClear(3);
 		roomProperties.put(\rTSpec, [0, 3].asSpec);
-		roomProperties.put(\rMSpec, [0, 1].asSpec);			w = SCWindow("Virtual Room Properties", Rect(128, 64, 340, 150));
+		roomProperties.put(\rMSpec, [0, 1].asSpec);			w = GUI.window.new("Virtual Room Properties", Rect(128, 64, 340, 100));
 		w.view.decorator = f = FlowLayout(w.view.bounds,Point(4,4),Point(4,2));
 
-		t = SCStaticText(w, Rect(0, 0, 75, height+2));
+		t = GUI.staticText.new(w, Rect(0, 0, 75, height+2));
 		t.string = "RefGain: ";
-		v[0] = SCStaticText(w, Rect(0, 0, 30, height+2));
-		s[0] = SCSlider(w, Rect(0, 0, 182, height));
+		v[0] = GUI.staticText.new(w, Rect(0, 0, 30, height+2));
+		s[0] = GUI.slider.new(w, Rect(0, 0, 182, height));
 		s[0].value = this.refGain;
 		s[0].action = { 
 			this.refGain = s[0].value;
@@ -163,76 +159,145 @@ VirtualRoom {
 		};
 		f.nextLine;
 		
-		t = SCStaticText(w, Rect(0, 0, 75, height+2));
+		t = GUI.staticText.new(w, Rect(0, 0, 75, height+2));
 		t.string = "RevGain: ";
-		v[1] = SCStaticText(w, Rect(0, 0, 30, height+2));
-		s[1] = SCSlider(w, Rect(0, 0, 182, height));
+		v[1] = GUI.staticText.new(w, Rect(0, 0, 30, height+2));
+		s[1] = GUI.slider.new(w, Rect(0, 0, 182, height));
 		s[1].value = this.revGain;
 		s[1].action = { 
 			this.revGain = s[1].value;
 			v[1].string = s[1].value.round(0.01).asString;
 		};
 		f.nextLine;
-		
-		t = SCStaticText(w, Rect(0, 0, 75, height+2));
-		t.string = "RoomMix: ";
-		v[2] = SCStaticText(w, Rect(0, 0, 30, height+2));
-		s[2] = SCSlider(w, Rect(0, 0, 182, height));
-		s[2].value = this.roomMix;
-		s[2].action = { 
-			var val = s[2].value;
-			this.roomMix = val;
-			v[2].string = val.round(0.01).asString;
-		};
-		f.nextLine;
-		
-		t = SCStaticText(w, Rect(0, 0, 75, height+2));
+
+		t = GUI.staticText.new(w, Rect(0, 0, 75, height+2));
 		t.string = "hfDamping: ";
-		v[3] = SCStaticText(w, Rect(0, 0, 30, height+2));
-		s[3] = SCSlider(w, Rect(0, 0, 182, height));
-		s[3].value = this.hfDamping;
-		s[3].action = { 
-			this.hfDamping = s[3].value;
-			v[3].string = s[3].value.round(0.01).asString;
+		v[2] = GUI.staticText.new(w, Rect(0, 0, 30, height+2));
+		s[2] = GUI.slider.new(w, Rect(0, 0, 182, height));
+		s[2].value = this.hfDamping;
+		s[2].action = { 
+			this.hfDamping = s[2].value;
+			v[2].string = s[2].value.round(0.01).asString;
 		};
 		f.nextLine;
 		s.do({|x|x.action.value });
 		
 		w.front;
 	}
-		
-	/* 	Method: update
-		rebuilds the encoded sources from the sources list
-	*/
-	update {	
-		if (sources.size != 0, 
-			// insert all sources and sum them
-			{ encoded.source = sources.sum; }, 
-			{ encoded.source = nil });
-		// make sure refGain is set properly - not necessary??
-		// csources.do({ |source| source.set(\refGain, VirtualRoom.refGain) });
-	}
 	
-	/* 	method: addSourceLight
-		add a source to the virtual room, but just use 4 reflections. This is though for using many sources 
+	/* 	method: play
+		play the output node proxy
+	*/
+	play { out.play }
+
+	/* 	method: stop
+		stops the output node proxy
+	*/	
+	stop { out.stop }
+
+	/* 	method: end
+		ends the virtual room, removes all node proxies
 		Parameter:
-			key A string to identify the source
+			fadeTime A time to fade out
+	*/
+	end { |fadeTime=0.1| 
+		out.end(fadeTime);
+		fork { 
+			fadeTime.wait; 
+			sources.do(_.end);
+			bin.end;
+			revIn.end;
+			encoded.end;
+			listener.end;
+		};
+	}
+
+	/* 	method: addSource
+		add a source to the virtual room 
+		Parameter:
 			source A mono sound source as NodeProxy.audio
-			pos an Array with [xpos, ypos, zpos]
+			key A string to identify the source
+			x, y, z the position of the source
+	*/
+	addSource { arg source, key, x, y, z;
+		^this.prAddSource(false, source, key, x, y, z;) 
+	}
+
+	/* 	method: addSourceLight
+		add a source to the virtual room, a lighter version
+		Parameter:
+			source A mono sound source as NodeProxy.audio
+			key A string to identify the source
+			x, y, z the position of the source
 	*/
 	addSourceLight { arg source, key, x, y, z;
+		^this.prAddSource(true, source, key, x, y, z;) 
+	}
+
+	/* 	method: removeSource
+		remove a source from the virtual room 
+		Parameter:
+			key A string to identify the source
+	*/
+	removeSource { |key| 
+		this.prAddSource(false, nil, key); 
+		{ sources.removeAt(key).postln.free; }.defer(0.1);
+	}
+
+	/* 	method: prAddSource
+		private function that takes care of adding the source
+		Parameter:
+			light Boolean to denote if light version or not
+			source A mono sound source as NodeProxy.audio
+			key A string to identify the source
+			x, y, z the position of the source
+	*/
+	prAddSource { |light=true, source, key, x, y, z| 
+		var synthFunc, myProxy; 
+		if (source.notNil) { 
+			if (light) { 
+				synthFunc = this.lightSourceFunc(source, x, y, z) 
+			} { 
+				synthFunc = this.fullSourceFunc(source, x, y, z) 
+			};
+		};
+			// make the audio proxy if needed
+		if (sources[key].isNil) { 
+			sources.put(key, 
+				NodeProxy.audio(numChannels: encoded.numChannels)
+				.bus_(encoded.bus)	// now writes to encoded bus directly!
+			);
+		} { 
+			// "VirtualRoom: reusing existing proxy.".postln;
+		};
+		
+		sources[key].set(\refGain, this.refGain)
+			.set(\xpos, x, \ypos, y, \zpos, z);
+			 
+		sources[key].source = synthFunc; 
+	}
+
+	/* Alberto:
+		funcs could be optimised as SynthDefs, 
+		with an arg for listenBusIndex, 
+		room could be a KeyBus (synced bus and lang values)
+		 ... later ... 
+	*/
+		
+	/* 	method: lightSourceFunc
+		create the encoded source function
+		Parameter:
+			source A mono sound source as NodeProxy.audio
+	*/
+	lightSourceFunc { arg source;
 	
-		var  synthFunc; 
-		
-		("VirtualRoom: adding source " ++ key ++ " - the light way...").postln;
-		
-		synthFunc = { arg refGain = 0, xpos = x, ypos = y, zpos = z;
+		^{ arg refGain = 0, xpos, ypos, zpos;
 			var sourcePositions;
 			var distances, gains, phis, thetas, delTimes, gainSource;
 			var lx, ly, lz, lo;
-
-			lx = listener.kr(1,0); ly = listener.kr(1,1); lz = listener.kr(1,2); lo = listener.kr(1,3);
 			
+			#lx, ly, lz, lo = listener.kr(4);
+
 			// direct source + 4 reflections		
 			sourcePositions = [
 				xpos, ypos, zpos, 
@@ -241,6 +306,7 @@ VirtualRoom {
 				xpos, this.room[1] + (2 * this.room[4]) - ypos, zpos, 
 				xpos, this.room[1] -ypos, zpos
 			];
+			
 			#phis, thetas, distances = sourcePositions.clump(3).collect({ |pos|
 				var planeDist;
 				planeDist = hypot(pos[1]-ly, pos[0]-lx);
@@ -248,39 +314,30 @@ VirtualRoom {
 			}).flop;		
 
 			delTimes = ( distances / 340 );
-			gains = (distances + 1).reciprocal; 
+
+			//phis.first.poll(1, "phi0");
+			//thetas.first.poll(1, "theta0");
+			//distances.first.poll(1, "distance0");
+			
+			gains = (distances + 1).reciprocal.squared; 
+
 			(1..4).do({ | i | gains[i] = gains[i] * refGain });
 		
 			// sum up the encoded channels of all sources (original + reflections) 
 			// DelayL replacement with BufRead....
-			DelayL.ar( source.ar, 2, delTimes, gains.squared).collect( { |ch, i| 
+			DelayL.ar( source.ar, 2, delTimes, gains).collect( { |ch, i| 
 				PanAmbi3O.ar(ch, phis[i], thetas[i]); }).sum;
-		};
-
-		// produce the NodeProxy.audio
-		sources.put(key, NodeProxy.audio(numChannels: 16));
-		sources[key].set(\refGain, this.refGain);
-		sources[key].source = synthFunc; 
-		
-		// update the encoding node proxy
-		this.update;
+		}
 	}
 
-
-	/* 	method: addSource
-		add a source to the virtual room 
+	/* 	method: fullSourceFunc
+		create the encoded source function
 		Parameter:
-			key A string to identify the source
 			source A mono sound source as NodeProxy.audio
-			pos A NodeProxy.control with [xpos, ypos, zpos]
-	*/
-	addSource { arg source, key, x, y, z;
+	*/	
+	fullSourceFunc { arg source;
 	
-		var  synthFunc; 
-		
-		("VirtualRoom: adding source " ++ key).postln;
-		
-		synthFunc = { arg refGain = 0, xpos = x, ypos = y, zpos = z;
+		^{ arg refGain = 0, xpos, ypos, zpos;
 			var sourcePositions;
 			var distances, gains, phis, thetas, delTimes, gainSource;
 			var phi, theta, planeDist, roomDist, refGain2; 
@@ -288,7 +345,7 @@ VirtualRoom {
 			var lx, ly, lz, lo;
 			refGain2 =  refGain.squared;
 
-			lx = listener.kr(1,0); ly = listener.kr(1,1); lz = listener.kr(1,2); lo = listener.kr(1,3);
+			#lx, ly, lz, lo = listener.kr(4);
 										
 			// calculate angles for source
 			planeDist = hypot(ypos-ly, xpos-lx);
@@ -302,56 +359,18 @@ VirtualRoom {
 				roomModel.refs10polar(xpos, ypos, zpos, lx, ly, lz);
 		
 			#phis, thetas, distances = sourceAndRefs.clump(3).flop;
+			
 			delTimes = ( distances / 340 );
-			gains = (distances + 1).reciprocal; 
+
+			//distances.poll(1, "dists");
+			gains = (distances + 1).reciprocal.squared; //.poll(1, "refGain"); 
+			
 			(1..10).do({ | i | gains[i] = gains[i] * if (i.inclusivelyBetween(5,8), refGain, refGain2) });
 		
 			// sum up the encoded channels of all sources (original + reflections) 
 			// DelayL replacement with BufRead....
-			DelayL.ar( source.ar, 2, delTimes, gains.squared).collect( { |ch, i| 
+			DelayL.ar( source.ar, 2, delTimes, gains).collect( { |ch, i| 
 				PanAmbi3O.ar(ch, phis[i], thetas[i]); }).sum;
-		};
-
-		// produce the NodeProxy.audio
-		sources.put(key, NodeProxy.audio(numChannels: 16));
-		sources[key].set(\refGain, this.refGain);
-		sources[key].source = synthFunc; 
-		
-		// update the encoding node proxy
-		this.update;
+		}
 	}
-	
-	
-	/* 	method: removeSource
-		remove a source to the virtual room 
-		Parameter:
-			key The key to identify the source
-	*/
-	removeSource { arg key;
-	
-		// free the NodeProxy and remove it from the instance dict
-		sources[key].free; sources.removeAt(key);
-		
-		// update the encoding node proxy
-		this.update;
-	}
-	
-	/* 	method: free
-		frees all resources 
-	*/
-	free {
-		// free all sources
-		sources.do(_.free);
-		
-		// free all NodeProxies of the rendering engine
-		out.free;
-		bin.free;
-		encoded.free;
-		revIn.free;
-		
-		// free the listener NodeProxy
-		listener.free;
-	}
-	
-}	
-
+}
