@@ -153,13 +153,13 @@ Kemar : Binaural {
 		// read the files, normalise, cut them and multiply with window
 		fileL = File(path ++ "/elev" ++ elev ++ "/L"  ++ elev
 			++ "e" ++ stringAzi[0] ++"a.dat","r");
-		cL = fileL.read(Int16Array.newClear(fileL.length))  / 2.pow(15);
+		cL = fileL.read(Int16Array.newClear(fileL.length))  / 2.pow(16);
 		cL = cL.copySeries(0, 1, 127) * window;	
 		fileL.close; 
 		
 		fileR = File(path ++ "/elev" ++ elev ++ "/L"  ++ elev
 			++ "e" ++ stringAzi[1] ++"a.dat","r");
-		cR = fileR.read(Int16Array.newClear(fileR.length)) / 2.pow(15);
+		cR = fileR.read(Int16Array.newClear(fileR.length)) / 2.pow(16);
 		cR = cR.copySeries(0, 1, 127) * window;
 		fileR.close; 
 		
