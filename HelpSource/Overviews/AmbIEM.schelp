@@ -44,6 +44,8 @@ list::
 
 © Tim Blechmann - TELETYPE::tim@klingt.org::, 2010-2011
 
+Help files converted to SCDoc format by Daniel W. Delâtre
+
 SECTION:: Classes
 
 DEFINITIONLIST::
@@ -51,7 +53,7 @@ DEFINITIONLIST::
 || Receives OSC data from ARHeadtracker command
 ## LINK::Classes/BinAmbi3O::
 || Ambisonics direct decoding to binaural output
-## LINK::CUBE/CUBE::
+## LINK::CUBE::
 || For IEM CUBE 24 speaker setup
 ## LINK::Classes/PanAmbi2O::
 || Ambisonics encoding 2nd/3rd order
